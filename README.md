@@ -10,7 +10,7 @@
   2. Visualizing data
   3. Learning something about R
 
-##This is the website where I found the GIF of learning cat.
+## This is the website where I found the GIF of learning cat.
 [More cat learning GIFs](https://giphy.com/explore/cat-learning)
 
 ### **A meme that captures how I currently feel about my university studies**
