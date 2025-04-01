@@ -1,0 +1,99 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+```
+
+```{css}
+body {
+  font-size: 18px;     
+  line-height: 1.8;     
+  font-family: "Helvetica", "Arial", sans-serif;  /* 
+}
+
+h1, h2, h3, h4 {
+  font-weight: bold;
+  margin-top: 1.5em;
+}
+
+```
+
+
+## Screen Time Usage by App Type
+
+This report presents the analysis of responses from my Google Form survey  "Daily Screen Time Usage by App Category".
+
+**Visualizing App Usage Patterns by Age**
+
+To explore the distribution of app usage time in screen usage by different age groups, I created two bar charts:
+
+```{r}
+library(tidyverse)
+# Read survey response data
+logged_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQMJW4Ho3DIrLIGQsABG6fAzj4zE1s8tgwoMEnSIIuIXslZMMTwgrFty0zqSkhCwBf9cNhalnNu9nW7/pub?output=csv")
+# Rename the column data name to make it more tidy
+latest_data <- rename(logged_data,
+                      phone_type = 2,
+                      most_used_app = 3,
+                      usage_hours = 4,
+                      peak_screen_time = 5,
+                      app_type_before_18 = 6,
+                      app_type_after_18 = 7,
+                      age_group = 8)
+
+# Take the median value of the time period to calculate the mean value of the peak_screen_numeric data
+time_labels <- c("6--9am", "9--12", "12--15", "15--18", "18--21", "21--24", "after 24", "Not sure")
+time_midpoints <- c(7.5, 10.5, 13.5, 16.5, 19.5, 22.5, 1, NA)
+latest_data$peak_screen_numeric <- time_midpoints[match(latest_data$peak_screen_time, time_labels)]
+
+mean_peak_time <- mean(latest_data$peak_screen_numeric, na.rm = TRUE)
+min_time <- min(latest_data$usage_hours, na.rm = TRUE) 
+
+# Draw a bar chart
+latest_data %>%
+  group_by(age_group) %>%
+  summarise(avg_usage = mean(usage_hours, na.rm = TRUE)) %>%
+  ggplot(aes(x = age_group, y = avg_usage, fill = age_group)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Average Usage Time of Most-Used App by Age Group",
+    subtitle = "Comparing how long different age groups use their most-used app",
+    caption = "Source: Jiayue's phone usage survey",
+    x = "Age Group",
+    y = "Average App Usage Time (hours)"
+  )
+```
+
+### Dynamic Comments 1
+
+In contrast, the age group with the lowest average usage is  `r latest_data %>% group_by(age_group) %>% summarise(avg = mean(usage_hours, na.rm = TRUE)) %>% arrange(avg) %>% slice(1) %>% pull(age_group)`,  
+with only around  `r latest_data %>% group_by(age_group) %>% summarise(avg = mean(usage_hours, na.rm = TRUE)) %>% arrange(avg) %>% slice(1) %>% pull(avg) %>% round(1)` hours per day.
+
+-----------------------------------------------------
+
+
+```{r}
+# Bar chart about peak time period of screen use
+latest_data %>%
+  count(peak_screen_time) %>%
+  ggplot(aes(x = peak_screen_time, y = n, fill = peak_screen_time)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Distribution of Peak Screen Time",
+    subtitle = "When do people use their phones the most?",
+    caption = "Source: Jiayue's phone usage survey",
+    x = "Peak Screen Time",
+    y = "Number of Responses"
+  )
+
+```
+
+### Dynamic Comments 2
+
+The average peak screen time falls around `r round(mean_peak_time, 1)` o'clock, suggesting that most users are active in the evening.
+
+
